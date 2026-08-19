@@ -1,12 +1,23 @@
 <script lang="ts">
+	import { ui } from '$lib/copy';
+	import Gloss from '$lib/components/Gloss.svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { loadProfile } from '$lib/progress';
+	import { me } from '$lib/account';
 	import favicon from '$lib/assets/favicon.svg';
 	import './layout.css';
 
 	let { children } = $props();
 	const profile = $derived(browser ? loadProfile() : null);
+	let email = $state<string | null>(null);
+
+	$effect(() => {
+		if (!browser) return;
+		void me().then((session) => {
+			email = session?.email ?? null;
+		});
+	});
 </script>
 
 <svelte:head>
@@ -18,17 +29,21 @@
 	<header>
 		<a class="mark" href="/">GAMOLINGO</a>
 		<nav>
-			<a href="/path">課表</a>
-			<a href="/dex">英雄</a>
-			<a href="/sim">實戰</a>
+			<a href="/path"><Gloss compact {...ui.path} /></a>
+			<a href="/dex"><Gloss compact {...ui.dex} /></a>
+			<a href="/sim"><Gloss compact {...ui.sim} /></a>
+			<a href="/account"><Gloss compact {...ui.account} /></a>
 			<button
 				type="button"
 				onclick={() => {
 					goto('/onboard');
-				}}>{profile ? '重配' : '配課'}</button
+				}}><Gloss compact {...(profile ? ui.reset : ui.setup)} /></button
 			>
 		</nav>
 	</header>
+	{#if email}
+		<p class="who">{email}</p>
+	{/if}
 	<main>
 		{@render children()}
 	</main>
@@ -44,9 +59,9 @@
 	header {
 		display: flex;
 		justify-content: space-between;
-		align-items: baseline;
+		align-items: flex-end;
 		gap: 1rem;
-		margin-bottom: 2rem;
+		margin-bottom: 0.6rem;
 		border-bottom: 1px solid #222a26;
 		padding-bottom: 0.9rem;
 	}
@@ -55,11 +70,12 @@
 		letter-spacing: 0.18em;
 		font-size: 0.82rem;
 		color: var(--color-gold);
+		padding-bottom: 0.35rem;
 	}
 	nav {
 		display: flex;
-		gap: 0.9rem;
-		align-items: center;
+		gap: 0.85rem;
+		align-items: flex-end;
 		font-size: 0.92rem;
 	}
 	nav a {
@@ -72,7 +88,11 @@
 		background: transparent;
 		border: 1px solid #3a3320;
 		color: var(--color-gold);
-		padding: 0.2rem 0.55rem;
-		font-size: 0.8rem;
+		padding: 0.15rem 0.45rem 0.35rem;
+	}
+	.who {
+		color: var(--color-mist);
+		font-size: 0.78rem;
+		margin: 0 0 1.2rem;
 	}
 </style>

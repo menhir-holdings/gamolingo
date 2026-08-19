@@ -1,19 +1,17 @@
 <script lang="ts">
 	import { champions, patchVersion } from '$lib/content/champs';
-	import { trapIds } from '$lib/content/traps';
+	import { ui } from '$lib/copy';
+	import Gloss from '$lib/components/Gloss.svelte';
 
 	let query = $state('');
-	let trapsOnly = $state(false);
 
 	const rows = $derived.by(() => {
 		const q = query.trim().toLowerCase();
 		return champions.filter((champ) => {
-			if (trapsOnly && !(trapIds as readonly string[]).includes(champ.id)) return false;
 			if (!q) return true;
 			return (
 				champ.en.toLowerCase().includes(q) ||
 				champ.tw.includes(query.trim()) ||
-				champ.cnName.includes(query.trim()) ||
 				champ.pinyin.toLowerCase().includes(q)
 			);
 		});
@@ -21,11 +19,10 @@
 </script>
 
 <p class="kicker">Data Dragon {patchVersion}</p>
-<h1>英雄名冊</h1>
-<p class="lede">EN · 台服 · 陸服 client name. The last column is why 寒冰 does not land on 台服.</p>
+<h1><Gloss {...ui.dex} /></h1>
+<p class="lede">English splash name · 台服 Traditional with pinyin under it. Hover 中文 for English.</p>
 <div class="tools">
-	<input bind:value={query} placeholder="search" />
-	<label><input type="checkbox" bind:checked={trapsOnly} /> CN traps only</label>
+	<input bind:value={query} placeholder="Yasuo / 犽宿 / ya su" />
 </div>
 <table>
 	<thead>
@@ -33,8 +30,6 @@
 			<th></th>
 			<th>EN</th>
 			<th>台服</th>
-			<th>pinyin</th>
-			<th>陸服</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -42,9 +37,7 @@
 			<tr>
 				<td><img src={champ.icon} alt="" width="28" height="28" /></td>
 				<td>{champ.en}</td>
-				<td class="tw">{champ.tw}</td>
-				<td class="py">{champ.pinyin}</td>
-				<td>{champ.cnName}</td>
+				<td class="tw"><Gloss tw={champ.tw} pinyin={champ.pinyin} en={champ.en} /></td>
 			</tr>
 		{/each}
 	</tbody>
@@ -98,8 +91,5 @@
 	.tw {
 		font-family: var(--font-serif);
 		font-size: 1.05rem;
-	}
-	.py {
-		color: var(--color-mist);
 	}
 </style>

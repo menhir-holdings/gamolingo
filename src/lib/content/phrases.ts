@@ -277,7 +277,7 @@ export const phrases: Phrase[] = [
 		tw: '巴龍',
 		pinyin: 'bā lóng',
 		en: 'Baron',
-		when: 'TW says 巴龍. Mainland chat says 大龍. Do not type 大龍 on 台服.',
+		when: 'Baron. 開巴龍 to start it, 讓了 if it is not free.',
 		tags: ['objectives']
 	},
 	{

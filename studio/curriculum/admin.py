@@ -11,5 +11,5 @@ class PhraseAdmin(admin.ModelAdmin):
 
 @admin.register(Champion)
 class ChampionAdmin(admin.ModelAdmin):
-    list_display = ("english", "traditional", "pinyin", "cn_name")
-    search_fields = ("english", "traditional", "cn_name", "riot_id")
+    list_display = ("english", "traditional", "pinyin")
+    search_fields = ("english", "traditional", "riot_id")

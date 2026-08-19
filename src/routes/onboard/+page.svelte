@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import DrillPlayer from '$lib/components/DrillPlayer.svelte';
+	import Gloss from '$lib/components/Gloss.svelte';
 	import { champsForRole, champions } from '$lib/content/champs';
+	import { roles, ui } from '$lib/copy';
 	import { placementDrills } from '$lib/drills';
 	import { saveProfile } from '$lib/progress';
 	import type { Goal, HskBand, Role } from '$lib/types';
@@ -18,15 +20,6 @@
 	$effect(() => {
 		if (placing && placement.length === 0) placement = placementDrills();
 	});
-
-	const roles: { id: Role; tw: string; en: string }[] = [
-		{ id: 'top', tw: '上路', en: 'Top' },
-		{ id: 'jungle', tw: '打野', en: 'Jungle' },
-		{ id: 'mid', tw: '中路', en: 'Mid' },
-		{ id: 'adc', tw: 'ADC', en: 'Bot' },
-		{ id: 'support', tw: '輔助', en: 'Support' },
-		{ id: 'fill', tw: '補', en: 'Fill' }
-	];
 
 	const visible = $derived.by(() => {
 		const base = role === 'fill' ? champions : champsForRole(role);
@@ -60,72 +53,71 @@
 </script>
 
 {#if placing}
-	<h1>摸底</h1>
-	<p class="lede">Six questions. Wrong answers just weight the path — they don’t lock you out.</p>
+	<h1><Gloss {...ui.place} /></h1>
+	<p class="lede">Six calls. Wrong answers only change weighting — you still get a path.</p>
 	{#if placement.length}
 		<DrillPlayer drills={placement} onDone={(score) => persist(score)} />
 	{/if}
-	<p><button class="text" type="button" onclick={() => persist(null)}>跳過</button></p>
+	<p><button class="text" type="button" onclick={() => persist(null)}><Gloss {...ui.skip} /></button></p>
 {:else}
-	<p class="kicker">step {step + 1} / 4</p>
+	<p class="kicker">{step + 1} / 4</p>
 	{#if step === 0}
-		<h1>你打什麼位置？</h1>
+		<h1><Gloss tw="你打什麼位置？" pinyin="nǐ dǎ shén me wèi zhì" en="What role do you queue?" /></h1>
+		<p class="lede">Lane first. Missing calls, ganks, and champ names follow the role you queue.</p>
 		<div class="grid">
 			{#each roles as item (item.id)}
 				<button class:on={role === item.id} type="button" onclick={() => (role = item.id)}>
-					<strong>{item.tw}</strong>
-					<span>{item.en}</span>
+					<Gloss tw={item.tw} pinyin={item.pinyin} en={item.en} />
 				</button>
 			{/each}
 		</div>
 	{:else if step === 1}
-		<h1>常用英雄</h1>
-		<p class="lede">Pick the pool you hover. We’ll drill 台服 names first. Search works in EN or 中文.</p>
+		<h1><Gloss tw="常用英雄" pinyin="cháng yòng yīng xióng" en="Champs you actually hover" /></h1>
+		<p class="lede">We’ll drill the 台服 names for this pool. Search English splash, Traditional, or pinyin.</p>
 		<input bind:value={query} placeholder="Yasuo / 犽宿 / ya su" />
 		<div class="pool">
 			{#each visible as champ (champ.id)}
 				<button class:on={champs.includes(champ.id)} type="button" onclick={() => toggle(champ.id)}>
 					<img src={champ.icon} alt="" width="36" height="36" />
-					<span>{champ.tw}</span>
+					<Gloss tw={champ.tw} pinyin={champ.pinyin} en={champ.en} />
 					<small>{champ.en}</small>
 				</button>
 			{/each}
 		</div>
 	{:else if step === 2}
-		<h1>這季你要什麼？</h1>
+		<h1><Gloss tw="這週要什麼" pinyin="zhè zhōu yào shén me" en="What do you need this week?" /></h1>
 		<div class="grid">
 			<button class:on={goal === 'survive'} type="button" onclick={() => (goal = 'survive')}>
-				<strong>先活下來</strong>
-				<span>Don’t die in chat. Survival + lane + 巴龍.</span>
+				<Gloss tw="先活下來" pinyin="xiān huó xià lái" en="Don’t die in chat" />
 			</button>
 			<button class:on={goal === 'shotcall'} type="button" onclick={() => (goal = 'shotcall')}>
-				<strong>能喊</strong>
-				<span>Engage, give, group. Still short sentences.</span>
+				<Gloss tw="能喊" pinyin="néng hǎn" en="Call the fight / the objective" />
 			</button>
-			<button class:on={goal === 'local'} type="button" onclick={() => (goal = 'local')}>
-				<strong>像台服</strong>
-				<span>Full path including CN name traps.</span>
+			<button class:on={goal === 'full'} type="button" onclick={() => (goal = 'full')}>
+				<Gloss tw="整條課表" pinyin="zhěng tiáo kè biǎo" en="The full lobby path" />
 			</button>
 		</div>
 	{:else}
-		<h1>中文程度</h1>
+		<h1><Gloss tw="中文程度" pinyin="zhōng wén chéng dù" en="How much Chinese you already have" /></h1>
 		<div class="grid">
 			<button class:on={hsk === '3-4'} type="button" onclick={() => (hsk = '3-4')}>HSK 3–4</button>
 			<button class:on={hsk === '5-6'} type="button" onclick={() => (hsk = '5-6')}>HSK 5–6</button>
-			<button class:on={hsk === 'fluent'} type="button" onclick={() => (hsk = 'fluent')}>讀得順</button>
+			<button class:on={hsk === 'fluent'} type="button" onclick={() => (hsk = 'fluent')}>
+				<Gloss {...ui.fluent} />
+			</button>
 		</div>
-		<p class="lede">Pinyin stays on screen either way. This only changes how hard we skip.</p>
+		<p class="lede">Chrome always has pinyin under it. Hover for English. Lesson answers stay bare until you pick, then every option reveals pinyin and meaning.</p>
 	{/if}
 
 	<div class="row">
 		{#if step > 0}
-			<button class="ghost" type="button" onclick={() => (step -= 1)}>上一步</button>
+			<button class="ghost" type="button" onclick={() => (step -= 1)}><Gloss {...ui.back} /></button>
 		{/if}
 		{#if step < 3}
-			<button type="button" onclick={() => (step += 1)}>下一步</button>
+			<button type="button" onclick={() => (step += 1)}><Gloss {...ui.forward} /></button>
 		{:else}
-			<button type="button" onclick={() => (placing = true)}>摸底</button>
-			<button class="ghost" type="button" onclick={() => persist(null)}>直接進課表</button>
+			<button type="button" onclick={() => (placing = true)}><Gloss {...ui.place} /></button>
+			<button class="ghost" type="button" onclick={() => persist(null)}><Gloss {...ui.intoPath} /></button>
 		{/if}
 	</div>
 {/if}
@@ -167,7 +159,10 @@
 		align-items: center;
 		column-gap: 0.55rem;
 	}
-	.pool button span {
+	.pool button :global(.gloss) {
+		grid-column: 2;
+	}
+	.pool button :global(.tw) {
 		font-family: var(--font-serif);
 	}
 	.pool small {

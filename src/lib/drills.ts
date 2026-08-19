@@ -1,7 +1,6 @@
 import { phrases } from '$lib/content/phrases';
 import { scenarios } from '$lib/content/scenarios';
 import { championById, champsForRole, champions } from '$lib/content/champs';
-import { trapIds } from '$lib/content/traps';
 import type { Drill, ModuleId, Profile, Role } from '$lib/types';
 
 function shuffle<T>(items: T[]): T[] {
@@ -34,19 +33,24 @@ function phrasePool(tags: string[], role: Role) {
 	});
 }
 
-function phraseMcq(id: string, tw: string, pinyin: string, prompt: string, pool: string[]): Drill {
+function phraseMcq(id: string, tw: string, pinyin: string, prompt: string, meaning: string, pool: string[]): Drill {
 	const labels = shuffle([tw, ...pickDistractors(pool, tw)]);
 	return {
 		id,
 		kind: 'phrase-mcq',
 		prompt,
 		pinyin,
+		meaning,
 		answer: tw,
-		choices: labels.map((label) => ({
-			label,
-			pinyin: phrases.find((phrase) => phrase.tw === label)?.pinyin,
-			value: label
-		}))
+		choices: labels.map((label) => {
+			const phrase = phrases.find((item) => item.tw === label);
+			return {
+				label,
+				pinyin: phrase?.pinyin,
+				en: phrase?.en,
+				value: label
+			};
+		})
 	};
 }
 
@@ -60,16 +64,19 @@ export function drillsFor(moduleId: ModuleId, profile: Profile): Drill[] {
 					`${phrase.id}-mcq`,
 					phrase.tw,
 					phrase.pinyin,
-					`${phrase.en} — ${phrase.when}`,
+					phrase.when,
+					phrase.en,
 					twPool
 				);
 				const pinyinDrill: Drill = {
 					id: `${phrase.id}-py`,
 					kind: 'type-pinyin',
-					prompt: `Type pinyin for ${phrase.tw}`,
+					prompt: phrase.tw,
 					hint: phrase.en,
+					pinyin: phrase.pinyin,
+					meaning: phrase.en,
 					answer: foldPinyin(phrase.pinyin),
-					accept: [foldPinyin(phrase.pinyin), foldPinyin(phrase.tw)]
+					accept: [foldPinyin(phrase.pinyin)]
 				};
 				return index % 2 === 0 ? [mcq, pinyinDrill] : [mcq];
 			})
@@ -78,7 +85,7 @@ export function drillsFor(moduleId: ModuleId, profile: Profile): Drill[] {
 
 	if (moduleId === 'role') {
 		return phrasePool(['role'], profile.role).map((phrase) =>
-			phraseMcq(`${phrase.id}-mcq`, phrase.tw, phrase.pinyin, `${phrase.en}. ${phrase.when}`, twPool)
+			phraseMcq(`${phrase.id}-mcq`, phrase.tw, phrase.pinyin, phrase.when, phrase.en, twPool)
 		);
 	}
 
@@ -86,13 +93,13 @@ export function drillsFor(moduleId: ModuleId, profile: Profile): Drill[] {
 		return phrasePool(['lane'], profile.role)
 			.slice(0, 8)
 			.map((phrase) =>
-				phraseMcq(`${phrase.id}-mcq`, phrase.tw, phrase.pinyin, phrase.when, twPool)
+				phraseMcq(`${phrase.id}-mcq`, phrase.tw, phrase.pinyin, phrase.when, phrase.en, twPool)
 			);
 	}
 
 	if (moduleId === 'objectives') {
 		return phrasePool(['objectives'], profile.role).map((phrase) =>
-			phraseMcq(`${phrase.id}-mcq`, phrase.tw, phrase.pinyin, `${phrase.en}. ${phrase.when}`, twPool)
+			phraseMcq(`${phrase.id}-mcq`, phrase.tw, phrase.pinyin, phrase.when, phrase.en, twPool)
 		);
 	}
 
@@ -100,13 +107,13 @@ export function drillsFor(moduleId: ModuleId, profile: Profile): Drill[] {
 		return phrasePool(['fight', 'shotcall'], profile.role)
 			.slice(0, 8)
 			.map((phrase) =>
-				phraseMcq(`${phrase.id}-mcq`, phrase.tw, phrase.pinyin, phrase.when, twPool)
+				phraseMcq(`${phrase.id}-mcq`, phrase.tw, phrase.pinyin, phrase.when, phrase.en, twPool)
 			);
 	}
 
 	if (moduleId === 'select') {
 		return phrasePool(['select'], profile.role).map((phrase) =>
-			phraseMcq(`${phrase.id}-mcq`, phrase.tw, phrase.pinyin, phrase.when, twPool)
+			phraseMcq(`${phrase.id}-mcq`, phrase.tw, phrase.pinyin, phrase.when, phrase.en, twPool)
 		);
 	}
 
@@ -118,63 +125,49 @@ export function drillsFor(moduleId: ModuleId, profile: Profile): Drill[] {
 		const names = champions.map((champ) => champ.tw);
 		return pool.filter((champ) => Boolean(champ)).map((champ) => {
 			const row = champ!;
-			const choices = shuffle([row.tw, ...pickDistractors(names, row.tw)]).map((label) => ({
-				label,
-				pinyin: champions.find((item) => item.tw === label)?.pinyin,
-				value: label
-			}));
+			const choices = shuffle([row.tw, ...pickDistractors(names, row.tw)]).map((label) => {
+				const match = champions.find((item) => item.tw === label);
+				return {
+					label,
+					pinyin: match?.pinyin,
+					en: match?.en,
+					value: label
+				};
+			});
 			return {
 				id: `champ-${row.id}`,
-				kind: 'champ-name',
-				prompt: `台服 name for ${row.en}?`,
+				kind: 'champ-name' as const,
+				prompt: row.en,
 				pinyin: row.pinyin,
+				meaning: row.tw,
 				icon: row.icon,
 				answer: row.tw,
 				choices
-			} satisfies Drill;
+			};
 		});
-	}
-
-	if (moduleId === 'traps') {
-		const names = champions.map((champ) => champ.tw);
-		return trapIds
-			.map((id) => championById(id))
-			.filter((champ) => Boolean(champ))
-			.map((champ) => {
-				const row = champ!;
-				const choices = shuffle([row.tw, ...pickDistractors(names, row.tw, 3)]).map((label) => ({
-					label,
-					value: label
-				}));
-				return {
-					id: `trap-${row.id}`,
-					kind: 'champ-trap',
-					prompt: `CN client calls this「${row.cnName}」. 台服 name?`,
-					hint: `${row.en} · ${row.pinyin}`,
-					icon: row.icon,
-					answer: row.tw,
-					choices
-				} satisfies Drill;
-			});
 	}
 
 	if (moduleId === 'sim') {
 		return scenarios
-			.filter((scenario) => !scenario.roles || scenario.roles.includes(profile.role) || profile.role === 'fill')
+			.filter(
+				(scenario) => !scenario.roles || scenario.roles.includes(profile.role) || profile.role === 'fill'
+			)
 			.map((scenario) => {
 				const correct = scenario.options.find((option) => option.correct)!;
 				return {
 					id: `sim-${scenario.id}`,
-					kind: 'scenario',
+					kind: 'scenario' as const,
 					prompt: `${scenario.setup}\n${scenario.prompt}`,
 					pinyin: correct.pinyin,
+					meaning: correct.en,
 					answer: correct.tw,
 					choices: scenario.options.map((option) => ({
 						label: option.tw,
 						pinyin: option.pinyin,
+						en: option.en,
 						value: option.tw
 					}))
-				} satisfies Drill;
+				};
 			});
 	}
 
@@ -193,7 +186,7 @@ export function placementDrills(): Drill[] {
 	return [
 		...drillsFor('survival', profile).slice(0, 2),
 		...drillsFor('objectives', profile).slice(0, 1),
-		...drillsFor('traps', profile).slice(0, 2),
+		...drillsFor('champs', profile).slice(0, 2),
 		...drillsFor('sim', profile).slice(0, 1)
 	];
 }

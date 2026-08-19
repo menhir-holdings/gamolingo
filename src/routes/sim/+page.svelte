@@ -2,6 +2,8 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import DrillPlayer from '$lib/components/DrillPlayer.svelte';
+	import Gloss from '$lib/components/Gloss.svelte';
+	import { ui } from '$lib/copy';
 	import { drillsFor } from '$lib/drills';
 	import { loadProfile, markModule } from '$lib/progress';
 
@@ -19,11 +21,11 @@
 </script>
 
 <p class="kicker">8 seconds</p>
-<h1>實戰</h1>
-<p class="lede">No English. Pick the line you would type in all-chat or team chat.</p>
+<h1><Gloss {...ui.sim} /></h1>
+<p class="lede">Bare Traditional. After you pick — or the timer dies — every line shows pinyin and English.</p>
 
 {#if !profile}
-	<button type="button" onclick={() => goto('/onboard')}>先配課</button>
+	<button type="button" onclick={() => goto('/onboard')}><Gloss {...ui.setup} /></button>
 {:else if done}
 	<p class="score">{score}%</p>
 	<button
@@ -31,7 +33,7 @@
 		onclick={() => {
 			done = false;
 			round += 1;
-		}}>再來一局</button
+		}}><Gloss {...ui.againGame} /></button
 	>
 {:else}
 	<DrillPlayer

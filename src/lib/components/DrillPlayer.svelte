@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { checkAnswer } from '$lib/drills';
 	import { reviewCard } from '$lib/progress';
+	import { ui } from '$lib/copy';
+	import Gloss from '$lib/components/Gloss.svelte';
 	import type { Drill } from '$lib/types';
 
 	let {
@@ -75,8 +77,8 @@
 		{/if}
 
 		<p class="prompt">{drill.prompt}</p>
-		{#if drill.hint && locked}
-			<p class="hint">{drill.hint}</p>
+		{#if locked && drill.kind === 'type-pinyin'}
+			<p class="reveal">{drill.pinyin} · {drill.meaning}</p>
 		{/if}
 
 		{#if drill.kind === 'type-pinyin'}
@@ -105,8 +107,8 @@
 						onclick={() => grade(choice.value)}
 					>
 						<span class="tw">{choice.label}</span>
-						{#if choice.pinyin}
-							<small>{choice.pinyin}</small>
+						{#if locked}
+							<small>{choice.pinyin}{choice.en ? ` · ${choice.en}` : ''}</small>
 						{/if}
 					</button>
 				{/each}
@@ -115,14 +117,11 @@
 
 		{#if locked}
 			<div class="verdict" class:ok>
-				{#if ok}
-					對 · {drill.answer}{drill.pinyin ? ` · ${drill.pinyin}` : ''}
-				{:else}
-					是 {drill.answer}{drill.pinyin ? ` · ${drill.pinyin}` : ''}
-				{/if}
+				<Gloss {...ok ? ui.correct : ui.answer} />
+				<span class="ans">{drill.answer}{drill.pinyin ? ` · ${drill.pinyin}` : ''}{drill.meaning ? ` · ${drill.meaning}` : ''}</span>
 			</div>
 			<button class="next" type="button" onclick={next}>
-				{index + 1 >= drills.length ? '結算' : '下一題'}
+				<Gloss {...index + 1 >= drills.length ? ui.results : ui.next} />
 			</button>
 		{/if}
 	</div>
@@ -162,7 +161,7 @@
 		line-height: 1.45;
 		white-space: pre-line;
 	}
-	.hint {
+	.reveal {
 		color: var(--color-mist);
 	}
 	input {
@@ -204,10 +203,16 @@
 	}
 	.verdict {
 		color: var(--color-blood);
-		font-family: var(--font-serif);
+		display: flex;
+		gap: 0.6rem;
+		align-items: baseline;
+		flex-wrap: wrap;
 	}
 	.verdict.ok {
 		color: var(--color-jade);
+	}
+	.ans {
+		font-family: var(--font-serif);
 	}
 	.next {
 		justify-self: start;
@@ -215,7 +220,5 @@
 		color: #1a1406;
 		border: 0;
 		padding: 0.7rem 1.2rem;
-		font-weight: 600;
-		letter-spacing: 0.04em;
 	}
 </style>

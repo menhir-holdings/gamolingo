@@ -3,6 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import DrillPlayer from '$lib/components/DrillPlayer.svelte';
+	import Gloss from '$lib/components/Gloss.svelte';
+	import { ui } from '$lib/copy';
 	import { drillsFor } from '$lib/drills';
 	import { modules } from '$lib/path';
 	import { loadProfile, markModule } from '$lib/progress';
@@ -29,32 +31,38 @@
 </script>
 
 {#if !profile}
-	<p>先配課。</p>
-	<a href="/onboard">開始</a>
+	<p><Gloss {...ui.setup} /></p>
+	<a href="/onboard"><Gloss {...ui.start} /></a>
 {:else if !mod}
-	<p>沒有這一課。</p>
+	<p><Gloss {...ui.missing} /></p>
 {:else if score !== null}
-	<h1>{mod.titleTw}</h1>
+	<h1><Gloss tw={mod.titleTw} pinyin={mod.pinyin} en={mod.en} /></h1>
 	<p class="score">{score}%</p>
-	<p class="lede">{score >= 70 ? '夠用了。進下一課。' : '再打一輪。台服不會等你想拼音。'}</p>
+	<p class="lede">
+		{#if score >= 70}
+			<Gloss {...ui.pass} />
+		{:else}
+			<Gloss {...ui.retry} />
+		{/if}
+	</p>
 	<div class="row">
 		<button
 			type="button"
 			onclick={() => {
 				score = null;
 				round += 1;
-			}}>再來</button
+			}}><Gloss {...ui.again} /></button
 		>
-		<button class="ghost" type="button" onclick={() => goto('/path')}>課表</button>
+		<button class="ghost" type="button" onclick={() => goto('/path')}><Gloss {...ui.path} /></button>
 	</div>
 {:else}
-	<p class="kicker">{mod.title} · {mod.minutes}m</p>
-	<h1>{mod.titleTw}</h1>
+	<p class="kicker">{mod.minutes}m</p>
+	<h1><Gloss tw={mod.titleTw} pinyin={mod.pinyin} en={mod.en} /></h1>
 	<p class="lede">{mod.blurb}</p>
 	{#if drills.length}
 		<DrillPlayer drills={drills} timed={id === 'sim'} onDone={finish} />
 	{:else}
-		<p>這課沒有題。回課表。</p>
+		<p><Gloss {...ui.empty} /></p>
 	{/if}
 {/if}
 

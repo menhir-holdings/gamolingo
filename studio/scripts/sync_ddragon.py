@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pull en_US / zh_TW / zh_CN champion names from Data Dragon into the player."""
+"""Pull en_US / zh_TW champion names from Data Dragon into the player."""
 
 from __future__ import annotations
 
@@ -115,11 +115,9 @@ def main() -> None:
         version = json.load(response)[0]
     en = load("en_US", version)
     tw = load("zh_TW", version)
-    cn = load("zh_CN", version)
     champs = []
     for key, row in en.items():
         tw_row = tw[key]
-        cn_row = cn[key]
         tw_name = tw_row["name"]
         champs.append(
             {
@@ -127,8 +125,6 @@ def main() -> None:
                 "key": row["key"],
                 "en": row["name"],
                 "tw": tw_name,
-                "cnName": cn_row["name"],
-                "cnTitle": cn_row["title"],
                 "twTitle": tw_row["title"],
                 "pinyin": " ".join(lazy_pinyin(tw_name, style=Style.TONE)),
                 "tags": row.get("tags", []),

@@ -1,5 +1,5 @@
 export type Role = 'top' | 'jungle' | 'mid' | 'adc' | 'support' | 'fill';
-export type Goal = 'survive' | 'shotcall' | 'local';
+export type Goal = 'survive' | 'shotcall' | 'full';
 export type HskBand = '3-4' | '5-6' | 'fluent';
 
 export type Champion = {
@@ -7,8 +7,6 @@ export type Champion = {
 	key: string;
 	en: string;
 	tw: string;
-	cnName: string;
-	cnTitle: string;
 	twTitle: string;
 	pinyin: string;
 	tags: string[];
@@ -42,13 +40,13 @@ export type ModuleId =
 	| 'objectives'
 	| 'fights'
 	| 'select'
-	| 'traps'
 	| 'sim';
 
 export type LessonModule = {
 	id: ModuleId;
-	title: string;
 	titleTw: string;
+	pinyin: string;
+	en: string;
 	blurb: string;
 	minutes: number;
 	tags: string[];
@@ -77,7 +75,7 @@ export type Progress = {
 	currentModule: ModuleId | null;
 };
 
-export type DrillKind = 'phrase-mcq' | 'phrase-gloss' | 'type-pinyin' | 'champ-name' | 'champ-trap' | 'scenario';
+export type DrillKind = 'phrase-mcq' | 'type-pinyin' | 'champ-name' | 'scenario';
 
 export type Drill = {
 	id: string;
@@ -85,8 +83,9 @@ export type Drill = {
 	prompt: string;
 	hint?: string;
 	pinyin?: string;
+	meaning?: string;
 	icon?: string;
 	answer: string;
 	accept?: string[];
-	choices?: { label: string; pinyin?: string; value: string }[];
+	choices?: { label: string; pinyin?: string; en?: string; value: string }[];
 };

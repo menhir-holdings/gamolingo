@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import Gloss from '$lib/components/Gloss.svelte';
+	import { ui } from '$lib/copy';
 	import { buildPath, roleLabel } from '$lib/path';
 	import { loadProfile, loadProgress } from '$lib/progress';
 
@@ -8,18 +10,20 @@
 	const progress = $derived(browser ? loadProgress() : null);
 	const path = $derived(profile ? buildPath(profile) : []);
 	const totalMin = $derived(path.reduce((sum, mod) => sum + mod.minutes, 0));
+	const role = $derived(profile ? roleLabel(profile.role) : null);
 </script>
 
-{#if !profile}
-	<p>先配課。</p>
-	<button type="button" onclick={() => goto('/onboard')}>開始</button>
+{#if !profile || !role}
+	<p><Gloss {...ui.setup} /></p>
+	<button type="button" onclick={() => goto('/onboard')}><Gloss {...ui.start} /></button>
 {:else}
-	<p class="kicker">{roleLabel(profile.role).tw} · {profile.goal} · ~{totalMin} min</p>
-	<h1>你的課表</h1>
+	<p class="kicker">~{totalMin} min</p>
+	<h1><Gloss tw="你的課表" pinyin="nǐ de kè biǎo" en="Your path" /></h1>
 	<p class="lede">
-		Built from your role and pool. HSK {profile.hsk}.
+		<Gloss tw={role.tw} pinyin={role.pinyin} en={role.en} />
+		· HSK {profile.hsk}
 		{#if profile.placementScore !== null}
-			摸底 {profile.placementScore}%.
+			· 摸底 {profile.placementScore}%
 		{/if}
 	</p>
 	<ol>
@@ -29,11 +33,17 @@
 				<a href={`/lesson/${mod.id}`}>
 					<span class="n">{String(index + 1).padStart(2, '0')}</span>
 					<div>
-						<strong>{mod.titleTw}</strong>
-						<em>{mod.title} · {mod.minutes}m</em>
+						<Gloss tw={mod.titleTw} pinyin={mod.pinyin} en={mod.en} />
+						<em>{mod.minutes}m</em>
 						<p>{mod.blurb}</p>
 					</div>
-					<span class="st">{done ? '過了' : '開始'}</span>
+					<span class="st"
+						>{#if done}<Gloss tw="過了" pinyin="guò le" en="Done" />{:else}<Gloss
+								tw="開始"
+								pinyin="kāi shǐ"
+								en="Start"
+							/>{/if}</span
+					>
 				</a>
 			</li>
 		{/each}
@@ -53,6 +63,10 @@
 	}
 	.lede {
 		color: var(--color-mist);
+		display: flex;
+		gap: 0.4rem;
+		align-items: flex-end;
+		flex-wrap: wrap;
 	}
 	ol {
 		list-style: none;
@@ -74,15 +88,12 @@
 		color: var(--color-gold);
 		font-variant-numeric: tabular-nums;
 	}
-	strong {
-		font-family: var(--font-serif);
-		font-size: 1.2rem;
-		display: block;
-	}
 	em {
 		color: var(--color-mist);
 		font-style: normal;
 		font-size: 0.82rem;
+		display: block;
+		margin-top: 0.2rem;
 	}
 	li p {
 		margin: 0.35rem 0 0;

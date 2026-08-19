@@ -4,6 +4,8 @@
 	import { loadProfile, loadProgress } from '$lib/progress';
 	import { buildPath } from '$lib/path';
 	import { patchVersion } from '$lib/content/champs';
+	import { ui } from '$lib/copy';
+	import Gloss from '$lib/components/Gloss.svelte';
 
 	const profile = $derived(browser ? loadProfile() : null);
 	const progress = $derived(browser ? loadProgress() : null);
@@ -14,19 +16,27 @@
 </script>
 
 <section class="hero">
-	<p class="kicker">台服 · patch {patchVersion}</p>
-	<h1>HSK 不是 soloQ。<br />這是。</h1>
+	<p class="kicker">台服 soloQ · patch {patchVersion}</p>
+	<h1>
+		<span class="line"><Gloss tw="等我" pinyin="děng wǒ" en="Wait for me" /></span>
+		<span class="line"><Gloss tw="不要打" pinyin="bú yào dǎ" en="Don’t fight" /></span>
+	</h1>
 	<p class="lede">
-		Pinyin in, Traditional out — the words Taiwan League actually types. Champ names, 巴龍 not 大龍,
-		and eight-second chat calls.
+		You queued Taiwan. Flash is down. Someone typed two characters. You have eight seconds to type
+		two back — not an English sentence. This path drills that: your role, your pool, the lines you
+		actually send in 台服 soloQ.
 	</p>
 	{#if profile && next}
 		<button type="button" onclick={() => goto(`/lesson/${next.id}`)}>
-			繼續 · {next.titleTw}
+			<Gloss {...ui.continue} />
+			<span class="sep">·</span>
+			<Gloss tw={next.titleTw} pinyin={next.pinyin} en={next.en} />
 		</button>
-		<p class="ghost"><a href="/path">看完整課表</a></p>
+		<p class="ghost"><a href="/path"><Gloss {...ui.path} /></a></p>
 	{:else}
-		<button type="button" onclick={() => goto('/onboard')}>開始配課</button>
+		<button type="button" onclick={() => goto('/onboard')}>
+			<Gloss {...ui.start} />
+		</button>
 	{/if}
 </section>
 
@@ -44,12 +54,14 @@
 	}
 	h1 {
 		font-size: clamp(2.2rem, 6vw, 3.4rem);
-		line-height: 1.15;
+		line-height: 1.25;
 		margin: 0;
+		display: grid;
+		gap: 0.45rem;
 	}
 	.lede {
 		color: var(--color-mist);
-		max-width: 38rem;
+		max-width: 40rem;
 		line-height: 1.55;
 	}
 	button {
@@ -58,13 +70,15 @@
 		color: #1a1406;
 		border: 0;
 		padding: 0.85rem 1.3rem;
-		font-weight: 700;
+		display: inline-flex;
+		gap: 0.45rem;
+		align-items: flex-end;
+	}
+	.sep {
+		opacity: 0.5;
 	}
 	.ghost {
 		color: var(--color-mist);
 		font-size: 0.9rem;
-	}
-	.ghost a {
-		border-bottom: 1px solid #3a3320;
 	}
 </style>
