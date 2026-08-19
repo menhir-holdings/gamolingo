@@ -6,13 +6,15 @@
 
 ## Shipped
 
-None on `main` yet. First ship is [MT-179](https://linear.app/menhir-holdings/issue/MT-179).
+None on `main` yet.
 
 ## In flight
 
 | Issue | What |
 |-------|------|
-| [MT-179](https://linear.app/menhir-holdings/issue/MT-179) | v1 player (SvelteKit) + Django studio — **In Progress** |
+| [MT-179](https://linear.app/menhir-holdings/issue/MT-179) | v1 player (SvelteKit) + Django studio — [PR #1](https://github.com/menhir-holdings/gamolingo/pull/1) **In Review** |
+
+Preview: https://gamolingo-git-ledoit-mt-179-gamolingo-v1-a290b7-menhir-holdings.vercel.app
 
 ## Next
 
