@@ -1,8 +1,9 @@
 # Gamolingo — Status
 
 **Version:** 0.1.1  
-**As of:** 2026-08-19  
-**SoT:** [Linear — Gamolingo](https://linear.app/menhir-holdings/project/gamolingo-f647145249e3)
+**As of:** 2026-09-08  
+**SoT:** [Linear — Gamolingo](https://linear.app/menhir-holdings/project/gamolingo-f647145249e3)  
+**Checkout:** `Menhir Holdings/Game/Gamolingo`
 
 ## Shipped
 
